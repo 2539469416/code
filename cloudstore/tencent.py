@@ -2,6 +2,7 @@ import requests
 import json
 
 
+
 def getMap(page):
     url = "https://market.cloud.tencent.com/ncgi/search/getSearch?t=1648458987437&uin=&csrfCode=&reqSeqId="
     header = {
@@ -39,6 +40,32 @@ print("-------response------")
 print(map)
 print("---------------------")
 productSet = map["data"];
+
 products = productSet["productSet"]
 for product in products:
-    print(product['productName'])
+    categoryId = product["categoryId"]
+    commentTime = product["commentTime"]
+    deliverType = product["deliverType"]
+    flags = product["flags"]
+    illustrations = product["illustrations"]
+    insertTime = product["insertTime"]
+    isProprietary = product["isProprietary"]
+    isvName = product["isvName"]
+    l2Score = product["l2Score"]
+    logo = product["logo"]
+    minPrice = product["minPrice"]
+    productId = product["productId"]
+    productName = product["productName"]
+    publishTime = product["publishTime"]
+    score = product["score"]
+    selectionMaterialsAuditState = product["selectionMaterialsAuditState"]
+    sortFactor = product["sortFactor"]
+    summary = product["summary"]
+    tagIds = product["tagIds"]
+    tags = product["tags"]
+    times = product["times"]
+    tips = product["tips"]
+    weight = product["weight"]
+    companyName = product["companyName"]
+    comments = product["comments"]
+
