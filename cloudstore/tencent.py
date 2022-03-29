@@ -111,7 +111,7 @@ def insertSheet(classify, sheetName):
     num = 2
     # 初始化第一行
     init = ["应用名", "交付方式", "价格", "版本类型", "厂商", "url", "分类"]
-    boldTitle = workbook.add_format({
+    bold_title = workbook.add_format({
         'bold': True,  # 字体加粗
         'border': 1,  # 单元格边框宽度
         'align': 'center',  # 水平对齐方式
@@ -119,7 +119,7 @@ def insertSheet(classify, sheetName):
         'fg_color': '#67C5F2',  # 单元格背景颜色
         'text_wrap': False,  # 是否自动换行
     })
-    sheet.write_row("A1", init, boldTitle)
+    sheet.write_row("A1", init, bold_title)
     for sun in classify:
         data = {
             "count": 15, "page": 1, "categoryId": int(sun)
@@ -128,6 +128,7 @@ def insertSheet(classify, sheetName):
         num = insertLow(sheet, data, num)
 
 
+# 创建excle文件
 filename = "../tencent.xlsx"
 workbook = xlsxwriter.Workbook(filename)
 bold = workbook.add_format({

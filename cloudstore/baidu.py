@@ -33,13 +33,80 @@ def requestUrl(page, cid):
     url = "https://market.baidu.com/api/market/web/list/0/products?keyword=&label=&cid=" + str(
         cid) + "&priceFrom=0&pageNo=" + str(page) + "&tag="
     res = requests.get(url, headers=header).text
-    return json.loads(res)
+    return json.loads(res)["result"]["result"]
 
 
-baiDuMap = requestUrl(1, 102)
-products = baiDuMap["result"]["result"]
-for product in products:
-    del product["link"]
-    del product["digest"]
-    del product["thumbnail"]
-    print(product)
+def insertExcel(sheet,types_key,types_value,num,cid):
+    page = 1
+    cid = cid + "," + types_key
+    while 1:
+        products = requestUrl(page,cid)
+        for product in products:
+            title = product["title"]
+            price = product["price"]
+            types = types_value
+            vendor_name = product["vendorName"]
+            url = product["link"]
+            scene_keywords = str(product["sceneKeywords"])
+            # 定义插入行
+            productList = [title, price, types, vendor_name, url, scene_keywords]
+            site = "A" + str(num)
+            num += 1
+            sheet.write_row(site, productList, bold)
+        pageNum = len(products)
+        print("获取第：" + str(page) + "数据结束" + "---本页数据" + str(pageNum) + "条")
+        # 测试使用
+        # if page == 2:
+        #     break
+        if pageNum < 15:
+            break
+    return num
+
+
+def insertSheet(typesKey,typesValue):
+    lists = typesKey.split(":")
+    print(lists[0])
+    print(lists[1])
+    cid = lists[0]
+    sheet_name = lists[1]
+    if len(lists) < 2:
+        print("!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!")
+    sheet = workbook.add_worksheet(sheet_name)
+    num = 2
+    # 初始化第一行
+    init = ["应用名", "价格","分类", "厂商", "url", "标签"]
+    bold_title = workbook.add_format({
+        'bold': True,  # 字体加粗
+        'border': 1,  # 单元格边框宽度
+        'align': 'center',  # 水平对齐方式
+        'valign': 'vcenter',  # 垂直对齐方式
+        'fg_color': '#67C5F2',  # 单元格背景颜色
+        'text_wrap': False,  # 是否自动换行
+    })
+    # 每个sheet中的子分类
+    for productType in typesValue:
+        num = insertExcel(sheet,productType,typesValue[productType],num,cid)
+
+
+# 创建excle文件
+filename = "../baidu.xlsx"
+workbook = xlsxwriter.Workbook(filename)
+bold = workbook.add_format({
+    'bold': False,  # 字体加粗
+    'border': 1,  # 单元格边框宽度
+    'align': 'center',  # 水平对齐方式
+    'valign': 'vcenter',  # 垂直对齐方式
+    'fg_color': '#67C5F2',  # 单元格背景颜色
+    'text_wrap': False,  # 是否自动换行
+})
+for types in allType:
+    insertSheet(types,allType[types])
+workbook.close()
+# baiDuMap = requestUrl(1, 102)
+# 测试
+# products = baiDuMap["result"]["result"]
+# for product in products:
+#     del product["link"]
+#     del product["digest"]
+#     del product["thumbnail"]
+#     print(product)
