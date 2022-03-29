@@ -1,13 +1,13 @@
 import requests
 import json
-
+import xlsxwriter
 
 
 def getMap(page):
-    url = "https://market.cloud.tencent.com/ncgi/search/getSearch?t=1648458987437&uin=&csrfCode=&reqSeqId="
+    url = "https://market.cloud.tencent.com/ncgi/search/getSearch?t=1648518326675&uin=&csrfCode=&reqSeqId="
     header = {
         "Host": "market.cloud.tencent.com",
-        "Cookie": "market-device-id=546b76e27c45dbb08bb0a7abe89d136d",
+        "Cookie": "market-device-id=a9e34b98cc63112b11c6c8ae0c70eddb",
         "Content-Length": "15",
         "Sec-Ch-Ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"96\"",
         "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -31,18 +31,27 @@ def getMap(page):
         "page": page,
     }
     res = requests.post(url, data=data, headers=header).text
-    map = json.loads(res)
-    return map
+    pageMap = json.loads(res)
+    return pageMap
 
 
-map = getMap(1)
-print("-------response------")
-print(map)
-print("---------------------")
-productSet = map["data"];
+# def insertList(productList):
+#     return 0;
+#
 
+count = 0
+productMap = getMap(1)
+productSet = productMap["data"]
 products = productSet["productSet"]
+filename = "../tencent.xlsx"
+workbook = xlsxwriter.workbook(filename)
+sheet = workbook.add_worksheet('全部产品')
+# 初始化第一行
+init = ["应用名", "交付方式", "价格", "版本类型", "specId", "厂商"]
+sheet.write_row("A1", init)
+num = 2
 for product in products:
+    # 定义接收数据
     categoryId = product["categoryId"]
     commentTime = product["commentTime"]
     deliverType = product["deliverType"]
@@ -54,6 +63,9 @@ for product in products:
     l2Score = product["l2Score"]
     logo = product["logo"]
     minPrice = product["minPrice"]
+    price = minPrice["price"]
+    spec = minPrice["spec"]
+    specId = minPrice["specId"]
     productId = product["productId"]
     productName = product["productName"]
     publishTime = product["publishTime"]
@@ -68,4 +80,9 @@ for product in products:
     weight = product["weight"]
     companyName = product["companyName"]
     comments = product["comments"]
-
+    # 定义插入行
+    productList = [productName, deliverType, price, spec, specId, isvName, productId]
+    site = "A" + num
+    num += 1
+    sheet.write_row(site, productList)
+workbook.close()
