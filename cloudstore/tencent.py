@@ -109,7 +109,7 @@ def insertSheet(classify, sheetName):
             data = {
                 "count": 15, "page": 1, "categoryId": int(sun)
             }
-            print("正在爬取:" + sheetName + "中" + classify[sun] + "---分类" + sun)
+            print("正在爬取:" + sheetName + "----中----" + classify[sun] + "---分类" + sun)
             insertLow(sheet, data, num)
             # 合并单元格
             rowA = 'A' + str(num)
