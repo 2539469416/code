@@ -37,7 +37,7 @@ def getMap(page):
 
 # def insertList(productList):
 #     return 0;
-#
+
 
 count = 0
 productMap = getMap(1)
