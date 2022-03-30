@@ -123,6 +123,7 @@ for types in allType:
     print("------------------"+types+"------------------")
     insertSheet(types, allType[types])
 workbook.close()
+
 # baiDuMap = requestUrl(1, 102)
 # 测试
 # products = baiDuMap["result"]["result"]
