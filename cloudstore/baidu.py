@@ -64,12 +64,9 @@ def insertExcel(sheet, types_key, types_value, num, cid):
             if clearData(scene_keywords, title):
                 sheet.write_row(site, productList, bold)
                 num += 1
-            page += 1
         pageNum = len(products)
-        print("获取第：" + str(page) + "数据结束" + "---本页数据" + str(pageNum) + "条")
-        # 测试使用
-        # if page == 2:
-        #     break
+        print(types_value+">>>"+"获取第页：" + str(page) + "数据结束" + "---本页数据" + str(pageNum) + "条")
+        page += 1
         if pageNum < 10:
             break
     return num
@@ -105,7 +102,7 @@ def clearData(lists, title):
             "电商" in lists) or ("Java多版本" in lists) or ("灵活用工" in lists):
         print("标签过滤>>>" + str(lists))
         return False
-    if ("Java运行环境" in title) or ("牲畜" in title):
+    if ("Java运行环境" in title) or ("牲畜" in title) or ("茶叶" in title) or ("劳务派遣" in title):
         print("title过滤>>>" + title)
         return False
     return True
@@ -123,6 +120,7 @@ bold = workbook.add_format({
     'text_wrap': False,  # 是否自动换行
 })
 for types in allType:
+    print("------------------"+types+"------------------")
     insertSheet(types, allType[types])
 workbook.close()
 # baiDuMap = requestUrl(1, 102)
