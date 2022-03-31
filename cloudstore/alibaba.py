@@ -1,11 +1,13 @@
 import xlsxwriter
 import json
 import requests
+import excelUtil
 
 allType = {
     '云安全市场': ['56832023:主机安全', '56846020:应用安全', '56824015:数据安全', '56830014:安全管理', '56820014:网络安全'],
     '企业应用': ['56778013:办公管理', '56764034:财务管理', '56780006:人事管理', '56842010:销售管理'],
 }
+cloudName = "阿里云"
 
 # 创建excle文件
 filename = "../alibaba.xlsx"
@@ -51,18 +53,6 @@ def requestUrl(pageIndex, categoryId):
     return json.loads(res)["result"]["products"]
 
 
-# 设置单元格格式
-def formatSheet(sheet):
-    sheet.set_column('A:A', 55)
-    sheet.set_column('B:B', 10)
-    sheet.set_column('C:C', 10)
-    sheet.set_column('D:D', 10)
-    sheet.set_column('E:E', 36)
-    sheet.set_column('F:F', 100)
-    sheet.set_column('G:G', 100)
-    return sheet
-
-
 def insertExcel(sheet, cid, num):
     page = 1
     categoryId = cid.split(":")[0]
@@ -79,7 +69,7 @@ def insertExcel(sheet, cid, num):
             tagList = product["tagList"]
             tags = str(product["tags"])
             # 定义插入行
-            productList = [name, price, types, delivery_method, shop_name, url, str(tagList)]
+            productList = [name,cloudName, price, types, delivery_method, "NULL",shop_name, url, str(tagList)]
             site = "A" + str(num)
             if clearData(tagList, name):
                 sheet.write_row(site, productList, bold)
@@ -92,15 +82,17 @@ def insertExcel(sheet, cid, num):
     return num
 
 
-def insertSheet(typesKey, typesValue):
-    sheet = workbook.add_worksheet(typesKey)
+def insertSheet():
+    sheet = workbook.add_worksheet("阿里")
     num = 2
-    formatSheet(sheet)
     # 初始化第一行
-    init = ["应用名", "价格", "分类", "交付方式", "厂商", "url", "标签"]
+    init = ["应用名","所属云","价格","分类","交付方式","操作系统","厂商","url","标签"]
     sheet.write_row("A1", init, bold)
-    for cid in typesValue:
-        num = insertExcel(sheet, cid, num)
+    excelUtil.ExcelUtil.formatSheet(sheet)
+    for types in allType:
+        for cid in allType[types]:
+            num = insertExcel(sheet, cid, num)
+    print("请求结束,本次总结"+str(num)+"条数据")
 
 
 # 数据过滤
@@ -123,8 +115,7 @@ def clearData(lists, title):
 
 
 # 按照各大分类去遍历子分类
-for types in allType:
-    insertSheet(types, allType[types])
+insertSheet()
 
 # 数据测试
 # response = requestUrl(1,53448001)

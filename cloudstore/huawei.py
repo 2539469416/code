@@ -1,9 +1,11 @@
 import requests
 import json
 import xlsxwriter
+import excelUtil
 
 allType = ["1:104:<基础软件>管理与监控", "3:307:<企业应用>协同办公", "3:309:<企业应用>财务管理", "3:304:<企业应用>人力资源", "7:701:<安全>主机安全",
            "7:703:<安全>数据安全", "7:704:<安全>网络安全", "7:702:<安全>应用安全", "7:706:<安全>安全服务", "7:705:<安全>安全管理"]
+cloudName = "华为云"
 
 # 创建excle文件
 filename = "../huawei.xlsx"
@@ -55,35 +57,45 @@ def requestUrl(page, typeCode, form):
 
 def insert():
     sheet = workbook.add_worksheet("华为")
-    init = ["应用名_版本","价格","分类","支持操作系统","厂商","url"]
-    sheet.write_row("A1",init,bold_title)
+    excelUtil.ExcelUtil.formatSheet(sheet)
+    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
+    sheet.write_row("A1", init, bold_title)
     num = 2
     for types in allType:
         page = 1
-        site = "A" + str(num)
         cList = types.split(":")
         typeCode = cList[0]
         form = cList[1]
         typeName = cList[2]
-        products = requestUrl(page,typeCode,form)
-        for product in products:
-            title = product["title"]
-            originalPrice = product["originalPrice"]
-            supportos = product["supportos"]
-            corporationname = product["corporationname"]
-            url = product["url"]
-            data = [title,originalPrice,typeName,supportos,corporationname,url]
-            sheet.write_row(site,data,bold)
-        if len(products) < 12:
-            break
-        page += 1
-        print()
-    return 0
+        while 1:
+            products = requestUrl(page, typeCode, form)
+            for product in products:
+                title = product["title"]
+                originalPrice = product["originalPrice"]
+                supportos = product["supportos"]
+                corporationname = product["corporationname"]
+                tagnames = ""
+                if "tagnames" in product:
+                    tagnames = product["tagnames"]
+                url = product["url"]
+                data = [title, cloudName, originalPrice, typeName, "", supportos, corporationname, url, tagnames]
+                site = "A" + str(num)
+                sheet.write_row(site, data, bold)
+                num += 1
+            pageNum = len(products)
+            print(typeName + ">>>" + "获取第：" + str(page) + "页数据结束" + "---本页数据" + str(pageNum) + "条")
+            page += 1
+            if pageNum < 10:
+                break
+    print("请求结束,本次总结" + str(num) + "条数据")
 
 
-res = requestUrl(1, 1, 104)
-for maps in res:
-    for m in maps:
-        print(m)
-        print(maps[m])
-    break
+insert()
+workbook.close()
+
+# res = requestUrl(1, 1, 104)
+# for maps in res:
+#     for m in maps:
+#         print(m)
+#         print(maps[m])
+#     break

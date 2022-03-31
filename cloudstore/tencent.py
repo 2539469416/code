@@ -1,8 +1,8 @@
 import time
-
 import requests
 import json
 import xlsxwriter
+import excelUtil
 
 sunType1 = {"1011": "开发者工具", "1012": "安全", "1014": "应用镜像", "1079": "网络组件", "1080": "容灾与高可用"}
 sunType2 = {"1092": "账号安全审计", "1093": "应用安全", "1094": "网络安全", "1095": "主机安全", "1096": "安全测评", "1048": "数据安全"}
@@ -22,6 +22,7 @@ allType = {"1001": "镜像服务", "1009": "运行环境", "1015": "操作系统
            "1050": "销售管理", "1087": "财务管理", "1088": "人事管理", "1089": "生产链管理", "1090": "云通信", "1053": "工具软件",
            "1098": "应用开发", "1006": "API服务", "1056": "电子商务", "1057": "金融理财", "1058": "生活服务", "1059": "企业管理",
            "1060": "公共事务", "1061": "气象水利", "1097": "交通地理", "1062": "人工智能"}
+cloudName = "腾讯云"
 
 
 def getMap(dataL):
@@ -52,29 +53,17 @@ def getMap(dataL):
     return pageMap
 
 
-def formatSheet(sheet):
-    sheet.set_column('A:A', 60)
-    sheet.set_column('B:B', 10)
-    sheet.set_column('C:C', 10)
-    sheet.set_column('D:D', 30)
-    sheet.set_column('E:E', 40)
-    sheet.set_column('F:F', 60)
-    sheet.set_column('G:G', 20)
-    return sheet
-
-
-def insertLow(sheet, dataL, num):
+def insertExcel(sheet, dataL, num):
     page = 1
     while 1:
         productMap = getMap(dataL)
-        page += 1
         dataL["page"] = page
         # 每次请求延迟1秒
         # time.sleep(1)
-        print("获取第" + str(page) + "页数据开始")
         productSet = productMap["data"]
         products = productSet["productSet"]
         for product in products:
+            print(product)
             # 定义接收数据
             deliverType = product["deliverType"]
             isvName = product["isvName"]
@@ -89,12 +78,13 @@ def insertLow(sheet, dataL, num):
             url = "https://market.cloud.tencent.com/products/" + str(productId)
             category = allType[str(categoryId)]
             # 定义插入行
-            productList = [productName, deliverType, price, spec, isvName, url, category]
+            productList = [productName, cloudName, price, category, deliverType, "OS NULL", isvName, url, "TAGS NULL"]
             site = "A" + str(num)
             num += 1
             sheet.write_row(site, productList, bold)
         pageNum = len(products)
-        print("获取第：" + str(page) + "数据结束" + "---本页数据" + str(pageNum) + "条")
+        print(category+">>>获取第：" + str(page) + "页数据结束" + "---本页数据" + str(pageNum) + "条")
+        page += 1
         # 测试使用
         # if page == 2:
         #     break
@@ -104,13 +94,11 @@ def insertLow(sheet, dataL, num):
 
 
 # sheet中插入数据
-def insertSheet(classify, sheetName):
-    print("开始爬取:" + sheetName)
-    sheet = workbook.add_worksheet(sheetName)
-    sheet = formatSheet(sheet)
-    num = 2
-    # 初始化第一行
-    init = ["应用名", "交付方式", "价格", "版本类型", "厂商", "url", "分类"]
+# def insertSheet(classify, sheetName):
+def insertSheet():
+    sheet = workbook.add_worksheet("腾讯")
+    sheet = excelUtil.ExcelUtil.formatSheet(sheet)
+    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
     bold_title = workbook.add_format({
         'bold': True,  # 字体加粗
         'border': 1,  # 单元格边框宽度
@@ -119,13 +107,17 @@ def insertSheet(classify, sheetName):
         'fg_color': '#67C5F2',  # 单元格背景颜色
         'text_wrap': False,  # 是否自动换行
     })
-    sheet.write_row("A1", init, bold_title)
-    for sun in classify:
-        data = {
-            "count": 15, "page": 1, "categoryId": int(sun)
-        }
-        print("正在爬取:" + sheetName + "----中----" + classify[sun] + "---分类" + sun)
-        num = insertLow(sheet, data, num)
+    num = 2
+    for sunClassify in productType:
+        # 初始化第一行
+        sheet.write_row("A1", init, bold_title)
+        for sun in productType[sunClassify]:
+            data = {
+                "count": 15, "page": 1, "categoryId": int(sun)
+            }
+            # print("正在爬取:----中----" + sunClassify[sun] + "---分类" + sun)
+            num = insertExcel(sheet, data, num)
+    print("请求结束,本次总结" + str(num) + "条数据")
 
 
 # 创建excle文件
@@ -139,9 +131,9 @@ bold = workbook.add_format({
     'fg_color': '#67C5F2',  # 单元格背景颜色
     'text_wrap': False,  # 是否自动换行
 })
-for sunClassify in productType:
-    insertSheet(productType[sunClassify], sunClassify)
 
+
+insertSheet()
 workbook.close()
 print("运行结束")
 

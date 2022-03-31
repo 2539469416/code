@@ -1,6 +1,7 @@
 import requests
 import json
 import xlsxwriter
+import excelUtil
 
 # 目标
 # 只有一条有效数据
@@ -10,6 +11,7 @@ sunType2 = {"115001": "协同办公", "115009": "人事管理", "115030": "财�
 sunType3 = {"120001": "网络安全", "120002": "主机安全", "120004": "数据安全", "120006": "应用安全", "120008": "应用安全",
             "120012": "安全管理", "120013": "认证准入"}
 allType = {"110:镜像环境": sunType1, "115:企业应用": sunType2, "120:安全服务": sunType3, }
+cloudName = "百度云"
 
 
 def requestUrl(page, cid):
@@ -36,16 +38,6 @@ def requestUrl(page, cid):
     return json.loads(res)["result"]["result"]
 
 
-def formatSheet(sheet):
-    sheet.set_column('A:A', 50)
-    sheet.set_column('B:B', 10)
-    sheet.set_column('C:C', 10)
-    sheet.set_column('D:D', 30)
-    sheet.set_column('E:E', 100)
-    sheet.set_column('F:F', 100)
-    return sheet
-
-
 def insertExcel(sheet, types_key, types_value, num, cid):
     page = 1
     cid = cid + "," + types_key
@@ -59,7 +51,7 @@ def insertExcel(sheet, types_key, types_value, num, cid):
             url = product["link"]
             scene_keywords = str(product["sceneKeywords"])
             # 定义插入行
-            productList = [title, price, types, vendor_name, scene_keywords, url]
+            productList = [title, cloudName, price, types, "NULL", "NULL", vendor_name, url, scene_keywords]
             site = "A" + str(num)
             if clearData(scene_keywords, title):
                 sheet.write_row(site, productList, bold)
@@ -72,16 +64,11 @@ def insertExcel(sheet, types_key, types_value, num, cid):
     return num
 
 
-def insertSheet(typesKey, typesValue):
-    lists = typesKey.split(":")
-    cid = lists[0]
-    sheet_name = lists[1]
-    if len(lists) < 2:
-        print("!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!")
-    sheet = workbook.add_worksheet(sheet_name)
+def insertSheet():
     num = 2
+    sheet = workbook.add_worksheet("百度")
     # 初始化第一行
-    init = ["应用名", "价格", "分类", "厂商", "标签", "url"]
+    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
     bold_title = workbook.add_format({
         'bold': True,  # 字体加粗
         'border': 1,  # 单元格边框宽度
@@ -90,11 +77,18 @@ def insertSheet(typesKey, typesValue):
         'fg_color': '#67C5F2',  # 单元格背景颜色
         'text_wrap': False,  # 是否自动换行
     })
-    formatSheet(sheet)
-    sheet.write_row("A1", init, bold_title)
-    # 每个sheet中的子分类
-    for productType in typesValue:
-        num = insertExcel(sheet, productType, typesValue[productType], num, cid)
+    for types in allType:
+        lists = types.split(":")
+        cid = lists[0]
+        if len(lists) < 2:
+            print("!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!")
+
+        excelUtil.ExcelUtil.formatSheet(sheet)
+        sheet.write_row("A1", init, bold_title)
+        # 每个sheet中的子分类
+        for productType in allType[types]:
+            num = insertExcel(sheet, productType, allType[types][productType], num, cid)
+    print("请求结束,本次总结" + str(num) + "条数据")
 
 
 def clearData(lists, title):
@@ -119,9 +113,8 @@ bold = workbook.add_format({
     'fg_color': '#67C5F2',  # 单元格背景颜色
     'text_wrap': False,  # 是否自动换行
 })
-for types in allType:
-    print("------------------"+types+"------------------")
-    insertSheet(types, allType[types])
+
+insertSheet()
 workbook.close()
 
 # baiDuMap = requestUrl(1, 102)
