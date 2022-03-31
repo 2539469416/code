@@ -23,6 +23,7 @@ allType = {"1001": "镜像服务", "1009": "运行环境", "1015": "操作系统
            "1098": "应用开发", "1006": "API服务", "1056": "电子商务", "1057": "金融理财", "1058": "生活服务", "1059": "企业管理",
            "1060": "公共事务", "1061": "气象水利", "1097": "交通地理", "1062": "人工智能"}
 cloudName = "腾讯云"
+n = 0
 
 
 def getMap(dataL):
@@ -53,7 +54,7 @@ def getMap(dataL):
     return pageMap
 
 
-def insertExcel(sheet, dataL, num):
+def insertExcel(sheet, dataL, num, bold):
     page = 1
     while 1:
         productMap = getMap(dataL)
@@ -63,18 +64,14 @@ def insertExcel(sheet, dataL, num):
         productSet = productMap["data"]
         products = productSet["productSet"]
         for product in products:
-            print(product)
             # 定义接收数据
             deliverType = product["deliverType"]
             isvName = product["isvName"]
             minPrice = product["minPrice"]
             price = float(minPrice["price"]) / 100
-            spec = minPrice["spec"]
             productId = product["productId"]
             productName = product["productName"]
             categoryId = product["categoryId"]
-            companyName = product["companyName"]
-            comments = product["comments"]
             url = "https://market.cloud.tencent.com/products/" + str(productId)
             category = allType[str(categoryId)]
             # 定义插入行
@@ -83,7 +80,7 @@ def insertExcel(sheet, dataL, num):
             num += 1
             sheet.write_row(site, productList, bold)
         pageNum = len(products)
-        print(category+">>>获取第：" + str(page) + "页数据结束" + "---本页数据" + str(pageNum) + "条")
+        print(category + ">>>获取第" + str(page) + "页数据结束" + "---本页数据" + str(pageNum) + "条")
         page += 1
         # 测试使用
         # if page == 2:
@@ -93,47 +90,21 @@ def insertExcel(sheet, dataL, num):
     return num
 
 
-# sheet中插入数据
-# def insertSheet(classify, sheetName):
-def insertSheet():
-    sheet = workbook.add_worksheet("腾讯")
-    sheet = excelUtil.ExcelUtil.formatSheet(sheet)
-    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
-    bold_title = workbook.add_format({
-        'bold': True,  # 字体加粗
-        'border': 1,  # 单元格边框宽度
-        'align': 'center',  # 水平对齐方式
-        'valign': 'vcenter',  # 垂直对齐方式
-        'fg_color': '#67C5F2',  # 单元格背景颜色
-        'text_wrap': False,  # 是否自动换行
-    })
-    num = 2
+# 分类插入
+def insertSheet(sheet, num, bold):
     for sunClassify in productType:
-        # 初始化第一行
-        sheet.write_row("A1", init, bold_title)
         for sun in productType[sunClassify]:
             data = {
                 "count": 15, "page": 1, "categoryId": int(sun)
             }
             # print("正在爬取:----中----" + sunClassify[sun] + "---分类" + sun)
-            num = insertExcel(sheet, data, num)
-    print("请求结束,本次总结" + str(num) + "条数据")
+            num = insertExcel(sheet, data, num, bold)
+    print("请求结束,本次总结" + str(num - n) + "条数据")
+    return num
 
 
-# 创建excle文件
-filename = "../tencent.xlsx"
-workbook = xlsxwriter.Workbook(filename)
-bold = workbook.add_format({
-    'bold': False,  # 字体加粗
-    'border': 1,  # 单元格边框宽度
-    'align': 'center',  # 水平对齐方式
-    'valign': 'vcenter',  # 垂直对齐方式
-    'fg_color': '#67C5F2',  # 单元格背景颜色
-    'text_wrap': False,  # 是否自动换行
-})
-
-
-insertSheet()
-workbook.close()
-print("运行结束")
-
+def add(sheet, num, bold):
+    n = num
+    num = insertSheet(sheet, num, bold)
+    print("腾讯云运行结束")
+    return num

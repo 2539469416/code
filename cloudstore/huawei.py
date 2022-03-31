@@ -6,27 +6,7 @@ import excelUtil
 allType = ["1:104:<基础软件>管理与监控", "3:307:<企业应用>协同办公", "3:309:<企业应用>财务管理", "3:304:<企业应用>人力资源", "7:701:<安全>主机安全",
            "7:703:<安全>数据安全", "7:704:<安全>网络安全", "7:702:<安全>应用安全", "7:706:<安全>安全服务", "7:705:<安全>安全管理"]
 cloudName = "华为云"
-
-# 创建excle文件
-filename = "../huawei.xlsx"
-workbook = xlsxwriter.Workbook(filename)
-# 定义头格式，文本格式
-bold_title = workbook.add_format({
-    'bold': True,  # 字体加粗
-    'border': 1,  # 单元格边框宽度
-    'align': 'center',  # 水平对齐方式
-    'valign': 'vcenter',  # 垂直对齐方式
-    'fg_color': '#67C5F2',  # 单元格背景颜色
-    'text_wrap': False,  # 是否自动换行
-})
-bold = workbook.add_format({
-    'bold': False,  # 字体加粗
-    'border': 1,  # 单元格边框宽度
-    'align': 'center',  # 水平对齐方式
-    'valign': 'vcenter',  # 垂直对齐方式
-    'fg_color': '#67C5F2',  # 单元格背景颜色
-    'text_wrap': False,  # 是否自动换行
-})
+n = 0
 
 
 def requestUrl(page, typeCode, form):
@@ -55,12 +35,7 @@ def requestUrl(page, typeCode, form):
     return json.loads(res)["pagination"]["items"]
 
 
-def insert():
-    sheet = workbook.add_worksheet("华为")
-    excelUtil.ExcelUtil.formatSheet(sheet)
-    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
-    sheet.write_row("A1", init, bold_title)
-    num = 2
+def insert(sheet,num,bold):
     for types in allType:
         page = 1
         cList = types.split(":")
@@ -87,11 +62,15 @@ def insert():
             page += 1
             if pageNum < 10:
                 break
-    print("请求结束,本次总结" + str(num) + "条数据")
+    print("华为云请求结束,本次总结" + str(num) + "条数据")
+    return num
 
 
-insert()
-workbook.close()
+def add(sheet, num, bold):
+    n = num - 1
+    num = insert(sheet, num, bold)
+    print("运行结束")
+    return num
 
 # res = requestUrl(1, 1, 104)
 # for maps in res:

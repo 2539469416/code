@@ -12,6 +12,7 @@ sunType3 = {"120001": "网络安全", "120002": "主机安全", "120004": "数�
             "120012": "安全管理", "120013": "认证准入"}
 allType = {"110:镜像环境": sunType1, "115:企业应用": sunType2, "120:安全服务": sunType3, }
 cloudName = "百度云"
+n = 0
 
 
 def requestUrl(page, cid):
@@ -38,7 +39,7 @@ def requestUrl(page, cid):
     return json.loads(res)["result"]["result"]
 
 
-def insertExcel(sheet, types_key, types_value, num, cid):
+def insertExcel(sheet, types_key, types_value, num, cid,bold):
     page = 1
     cid = cid + "," + types_key
     while 1:
@@ -64,31 +65,17 @@ def insertExcel(sheet, types_key, types_value, num, cid):
     return num
 
 
-def insertSheet():
-    num = 2
-    sheet = workbook.add_worksheet("百度")
-    # 初始化第一行
-    init = ["应用名", "所属云", "价格", "分类", "交付方式", "操作系统", "厂商", "url", "标签"]
-    bold_title = workbook.add_format({
-        'bold': True,  # 字体加粗
-        'border': 1,  # 单元格边框宽度
-        'align': 'center',  # 水平对齐方式
-        'valign': 'vcenter',  # 垂直对齐方式
-        'fg_color': '#67C5F2',  # 单元格背景颜色
-        'text_wrap': False,  # 是否自动换行
-    })
+def insertSheet(sheet,num,bold):
     for types in allType:
         lists = types.split(":")
         cid = lists[0]
         if len(lists) < 2:
             print("!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!")
-
-        excelUtil.ExcelUtil.formatSheet(sheet)
-        sheet.write_row("A1", init, bold_title)
         # 每个sheet中的子分类
         for productType in allType[types]:
-            num = insertExcel(sheet, productType, allType[types][productType], num, cid)
-    print("请求结束,本次总结" + str(num) + "条数据")
+            num = insertExcel(sheet, productType, allType[types][productType], num, cid,bold)
+    print("请求结束,本次总结" + str(num-n) + "条数据")
+    return num
 
 
 def clearData(lists, title):
@@ -102,20 +89,12 @@ def clearData(lists, title):
     return True
 
 
-# 创建excle文件
-filename = "../baidu.xlsx"
-workbook = xlsxwriter.Workbook(filename)
-bold = workbook.add_format({
-    'bold': False,  # 字体加粗
-    'border': 1,  # 单元格边框宽度
-    'align': 'center',  # 水平对齐方式
-    'valign': 'vcenter',  # 垂直对齐方式
-    'fg_color': '#67C5F2',  # 单元格背景颜色
-    'text_wrap': False,  # 是否自动换行
-})
+def add(sheet, num, bold):
+    n = num
+    num = insertSheet(sheet, num, bold)
+    print("百度云运行结束")
+    return num
 
-insertSheet()
-workbook.close()
 
 # baiDuMap = requestUrl(1, 102)
 # 测试
